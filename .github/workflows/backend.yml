@@ -24,7 +24,7 @@ jobs:
       - name: 'Install Dependencies and Run Tests'
         run: |
           npm ci # Install dependencies
-          npm run test # Run tests
+          npm run test -- --coverage # Run tests with coverage
           npm run build # Build the project
 
       - name: 'Upload Coverage Artifact'
