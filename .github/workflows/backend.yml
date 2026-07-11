@@ -15,9 +15,11 @@ jobs:
     steps:
       - name: 'Checkout and Setup'
         uses: actions/checkout@v7 # Checkout the repository
+
+      - name: 'Setup Node.js'
         uses: actions/setup-node@v6 # Setup Node.js
         with:
-          node-version: 24.x # Specify the Node.js version
+          node-version: 24 # Specify the Node.js version
 
       - name: 'Install Dependencies and Run Tests'
         run: |
