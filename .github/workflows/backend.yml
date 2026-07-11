@@ -13,11 +13,28 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7 # Checkout the repository
-      - uses: actions/setup-node@v6 # Setup Node.js
+      - name: 'Checkout and Setup'
+        uses: actions/checkout@v7 # Checkout the repository
+        uses: actions/setup-node@v6 # Setup Node.js
         with:
           node-version: 24.x # Specify the Node.js version
 
-      - run: npm ci # Install dependencies
-      - run: npm run test # Run tests
-      - run: npm run build # Build the project
+      - name: 'Install Dependencies and Run Tests'
+        run: |
+          npm ci # Install dependencies
+          npm run test # Run tests
+          npm run build # Build the project
+
+      - name: 'Upload Coverage Artifact'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: backend/coverage/**
+          retention-days: 5
+
+      - name: 'Upload dist Artifact'
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: backend/dist/index.js
+          retention-days: 5
