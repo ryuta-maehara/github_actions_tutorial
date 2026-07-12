@@ -4,8 +4,10 @@ on:
   push:
     branches:
      - main
-  schedule:
-      - cron: '0 12 * * *' # 日本時間で毎日21時に実行されるように設定
+  # 勉強用
+  # GitHub Actionsは時間で課金されるため無効化しておく
+  # schedule:
+  #    - cron: '0 12 * * *' # 日本時間で毎日21時に実行されるように設定
 
 defaults:
   run:
