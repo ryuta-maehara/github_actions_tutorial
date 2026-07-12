@@ -34,6 +34,7 @@ jobs:
 
           # Run the built project and API tests
           node dist/index.js & # Run the built project in the background
+          npx wait-on -t 10000 http://localhost:8080/api/health # Wait for the server to be ready
           npm run test:api # Run API tests
 
       - name: 'Upload Coverage Artifact'
