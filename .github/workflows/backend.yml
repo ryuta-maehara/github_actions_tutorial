@@ -27,9 +27,14 @@ jobs:
 
       - name: 'Install Dependencies and Run Tests'
         run: |
+          # Install dependencies, run tests with coverage, and build the project
           npm ci # Install dependencies
           npm run test -- --coverage # Run tests with coverage
           npm run build # Build the project
+
+          # Run the built project and API tests
+          node dist/index.js & # Run the built project in the background
+          npm run test:api # Run API tests
 
       - name: 'Upload Coverage Artifact'
         uses: actions/upload-artifact@v7
