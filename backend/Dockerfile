@@ -23,4 +23,4 @@ COPY --from=builder /app/frontend ./frontend
 # Set environment variables and expose the application port
 ENV PORT=8080
 EXPOSE 8080
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/index.js"]
