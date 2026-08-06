@@ -26,13 +26,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-     ### Node.jsのセットアップ
+      ### Node.jsのセットアップ
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
-     ### 依存関係のインストール
+      ### 依存関係のインストール
       - name: Install dependencies
         run: npm ci --prefix backend
 
