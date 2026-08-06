@@ -3,9 +3,9 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Copy package files and source code
-COPY package.json package-lock.json tsconfig.json ./
-COPY src ./src
-COPY ../frontend ./frontend
+COPY backend/package.json backend/package-lock.json backend/tsconfig.json ./
+COPY backend/src ./src
+COPY frontend ./frontend
 
 # Install dependencies and build the application
 RUN npm ci

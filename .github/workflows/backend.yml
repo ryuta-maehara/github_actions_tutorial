@@ -1,53 +1,59 @@
-name : backend
+name: Backend CI/CD
 
 on:
   push:
     branches:
-     - main
-  # 勉強用
-  # GitHub Actionsは時間で課金されるため無効化しておく
-  # schedule:
-  #    - cron: '0 12 * * *' # 日本時間で毎日21時に実行されるように設定
-
-defaults:
-  run:
-    working-directory: backend
+      - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: gcr.io/${{ secrets.GCP_PROJECT_ID }}/github_actions_tutorial-backend
+      CLOUD_RUN_SERVICE: github-actions-backend
+      CLOUD_RUN_REGION: asia-northeast1
     steps:
-      - name: 'Checkout and Setup'
-        uses: actions/checkout@v7 # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: 'Setup Node.js'
-        uses: actions/setup-node@v6 # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 24 # Specify the Node.js version
+          node-version: 24
 
-      - name: 'Install Dependencies and Run Tests'
+      - name: Install dependencies
+        run: npm ci --prefix backend
+
+      - name: Run unit tests
+        run: npm test --prefix backend
+
+      - name: Build backend
+        run: npm run build --prefix backend
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          install_components: ['docker-credential-gcr']
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker --quiet
+
+      - name: Build Docker image
+        run: docker build -f backend/Dockerfile -t "$IMAGE_NAME:${{ github.sha }}" .
+
+      - name: Push Docker image
+        run: docker push "$IMAGE_NAME:${{ github.sha }}"
+
+      - name: Deploy to Cloud Run
         run: |
-          # Install dependencies, run tests with coverage, and build the project
-          npm ci # Install dependencies
-          npm run test -- --coverage # Run tests with coverage
-          npm run build # Build the project
-
-          # Run the built project and API tests
-          node dist/index.js & # Run the built project in the background
-          npx wait-on -t 10000 http://localhost:8080/api/health # Wait for the server to be ready
-          npm run test:api # Run API tests
-
-      - name: 'Upload Coverage Artifact'
-        uses: actions/upload-artifact@v7
-        if : always() # Ensure this step runs even if previous steps fail
-        with:
-          name: coverage
-          path: backend/coverage/**
-          retention-days: 5
-
-      - name: 'Upload dist Artifact'
-        uses: actions/upload-artifact@v7
-        with:
-          name: dist
-          path: backend/dist/index.js
-          retention-days: 5
+          gcloud run deploy "$CLOUD_RUN_SERVICE" \
+            --image "$IMAGE_NAME:${{ github.sha }}" \
+            --region "$CLOUD_RUN_REGION" \
+            --platform managed \
+            --allow-unauthenticated

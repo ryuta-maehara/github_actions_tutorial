@@ -1,0 +1,6 @@
+# Ignore build artifacts and local files
+backend/node_modules
+backend/dist
+backend/coverage
+backend/*.log
+frontend/node_modules
