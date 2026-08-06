@@ -3,11 +3,9 @@ name: Backend CI/CD
 on:
   push:
     branches:
-      ### mainブランチへのプッシュ時にトリガー
       - main
 
 jobs:
-  ### backendのビルドとデプロイ
   build-and-deploy:
     runs-on: ubuntu-latest
 
@@ -15,61 +13,59 @@ jobs:
     ### GitHub SecretsにGCPのサービスアカウントキーとプロジェクトIDを設定しておく必要があります。
     ### GCP_SA_KEY: サービスアカウントキーのJSON
     ### GCP_PROJECT_ID: GCPのプロジェクトID
-
     env:
       IMAGE_NAME: asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-actions-backend-repo/github_actions_tutorial-backend
       CLOUD_RUN_SERVICE: github-actions-backend
       CLOUD_RUN_REGION: asia-northeast1
-
     steps:
-      ### リポジトリのチェックアウト
+      # リポジトリをチェックアウト
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      ### Node.jsのセットアップ
+      # Node.js をセットアップ
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
-      ### 依存関係のインストール
+      # 依存関係をインストール
       - name: Install dependencies
         run: npm ci --prefix backend
 
-      ### unitテストの実行
+      # ユニットテストを実行
       - name: Run unit tests
         run: npm test --prefix backend
 
-      ### backendのビルド
+      # バックエンドをビルド
       - name: Build backend
         run: npm run build --prefix backend
 
-      ### Google Cloudの認証
+      # Google Cloud に認証
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      ### gcloud CLIのセットアップ
+      # gcloud CLI をセットアップ
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          install_components: ['docker-credential-gcr']
+          install_components: docker-credential-gcr
 
-      ### Dockerの設定
+      # Artifact Registry 用の Docker 認証
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker --quiet asia-northeast1-docker.pkg.dev
 
-      ### Dockerイメージのビルド
+      # Docker イメージをビルド
       - name: Build Docker image
         run: docker build -f backend/Dockerfile -t "$IMAGE_NAME:${{ github.sha }}" .
 
-      ### Dockerイメージのプッシュ
+      # Docker イメージを Artifact Registry にプッシュ
       - name: Push Docker image
         run: docker push "$IMAGE_NAME:${{ github.sha }}"
 
-      ### Cloud Runへのデプロイ
+      # Cloud Run にデプロイ
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy "$CLOUD_RUN_SERVICE" \
