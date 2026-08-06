@@ -39,7 +39,7 @@ GitHub Actions は `main` ブランチへの push で次を実行します。
 - ユニットテスト実行
 - バックエンドのビルド
 - Docker イメージのビルド
-- Google Container Registry へ push
+- Artifact Registry へ push
 - Cloud Run へデプロイ
 
 ### GitHub Secrets
@@ -47,6 +47,21 @@ GitHub Actions は `main` ブランチへの push で次を実行します。
 
 - `GCP_PROJECT_ID`: GCP プロジェクト ID
 - `GCP_SA_KEY`: Cloud Run と Artifact Registry にアクセスできるサービスアカウントの JSON キー
+
+### Artifact Registry の準備
+Artifact Registry の Docker リポジトリを作成しておく必要があります。例:
+
+```bash
+gcloud artifacts repositories create github-actions-backend-repo \
+  --repository-format=docker \
+  --location=asia-northeast1
+```
+
+`IMAGE_NAME` は次の形式になります。
+
+```
+asia-northeast1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/github-actions-backend-repo/github_actions_tutorial-backend
+```
 
 ### ローカルビルド
 
