@@ -6,7 +6,7 @@ import { sum } from './sum'
 
 const PORT = process.env.PORT ?? 8080
 // フロントエンドの URL を 'http://frontend.example.com' のように指定してください。
-const CORS_ORIGIN = undefined
+const CORS_ORIGIN =  'https://storage.googleapis.com/github-actions-tutorial-gcs-maehara'
 
 const app = express()
 
