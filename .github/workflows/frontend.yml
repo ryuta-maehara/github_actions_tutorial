@@ -1,0 +1,38 @@
+name: Frontend Cloud Storage Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  FRONTEND_BUCKET: github-actions-tutorial-gcs-maehara
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Google Cloud に認証
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      # gcloud CLI をセットアップ
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      # フロントエンドを Cloud Storage にアップロード
+      - name: Upload frontend to Cloud Storage
+        run: |
+          gcloud storage rsync -r frontend gs://$FRONTEND_BUCKET
